@@ -33,9 +33,32 @@ fn main() {
 	println!("_key: {:?}", _key);
 	println!("data: {:?}", data);
 
-	let aes_encrypted_data = aes_encrypt(data, &_key);
+	let padded = pad(data.to_vec());
 
+	println!("padded: {:?}", padded);
+
+	let padded = pad(data.to_vec());
+
+	println!("padded: {:?}", padded);
+
+	let group_data = group(padded);
+
+	println!("group_data: {:?}", group_data);
+
+	let un_group_data = un_group(group_data);
+
+	println!("un_group_data: {:?}", un_group_data);
+
+	let un_pad_data = un_pad(un_group_data.to_vec());
+
+	println!("un_pad_data: {:?}", un_pad_data);
+
+	let aes_encrypted_data = aes_encrypt(data, &_key);
 	println!("aes_encrypted_data: {:?}", aes_encrypted_data);
+	let aes_decrypt_data = aes_decrypt(aes_encrypted_data, &_key);
+	println!("aes_encrypted_data: {:?}", aes_decrypt_data);
+
+
 }
 
 /// Simple AES encryption
@@ -118,12 +141,30 @@ fn group(data: Vec<u8>) -> Vec<[u8; BLOCK_SIZE]> {
 
 /// Does the opposite of the group function
 fn un_group(blocks: Vec<[u8; BLOCK_SIZE]>) -> Vec<u8> {
-	todo!()
+	let mut _block : Vec<u8> = Vec::new();
+	for block in blocks.iter() {
+		for val in block.iter() {
+			_block.push(val.clone())
+		}
+    }
+	_block
 }
 
 /// Does the opposite of the pad function.
 fn un_pad(data: Vec<u8>) -> Vec<u8> {
-	todo!()
+	let mut _data:Vec<u8> = Vec::new();
+
+	if data.len() > BLOCK_SIZE {
+		let mut i = 0;
+
+		while _data.len() < BLOCK_SIZE  {
+			
+			_data.push(data[i]);
+			i += 1;
+		}
+	}
+
+	_data
 }
 
 /// The first mode we will implement is the Electronic Code Book, or ECB mode.
