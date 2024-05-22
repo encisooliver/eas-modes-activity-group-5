@@ -19,54 +19,6 @@ use aes::{
 ///We're using AES 128 which has 16-byte (128 bit) blocks.
 const BLOCK_SIZE: usize = 16;
 
-fn main() {
-	// todo!("Maybe this should be a library crate. TBD");
-	// let data = vec![16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16];
-	// let key = vec![1: 16];
-	// let aes_encrypted_block = aes_decrypt(data, key);
-	// print!("{}",aes_encrypted_block);
-	let plaintext = "Hello, world!";
-	let key = "PBA";
-	let _key = string_to_u8_16(key);
-	let data = string_to_u8_16(plaintext);
-
-	println!("_key: {:?}", _key);
-	println!("data: {:?}", data);
-
-	let padded = pad(data.to_vec());
-
-	println!("padded: {:?}", padded);
-
-	let padded = pad(data.to_vec());
-
-	println!("padded: {:?}", padded);
-
-	let group_data = group(padded);
-
-	println!("group_data: {:?}", group_data);
-
-	let un_group_data = un_group(group_data);
-
-	println!("un_group_data: {:?}", un_group_data);
-
-	let un_pad_data = un_pad(un_group_data.to_vec());
-
-	println!("un_pad_data: {:?}", un_pad_data);
-
-	let aes_encrypted_data = aes_encrypt(data, &_key);
-	println!("aes_encrypted_data: {:?}", aes_encrypted_data);
-	let aes_decrypt_data = aes_decrypt(aes_encrypted_data, &_key);
-	println!("aes_decrypt: {:?}", aes_decrypt_data);
-
-	let ecb_encrypt_data = ecb_encrypt(data.to_vec(), _key);
-
-	println!("ecb_encrypt_data: {:?}", ecb_encrypt_data);
-
-	let cipher_text = ecb_decrypt(ecb_encrypt_data.to_vec(), _key);
-	println!("ecb_decrypt_data: {:?}", ecb_decrypt_data);
-
-}
-
 /// Simple AES encryption
 /// Helper function to make the core AES block cipher easier to understand.
 fn aes_encrypt(data: [u8; BLOCK_SIZE], key: &[u8; BLOCK_SIZE]) -> [u8; BLOCK_SIZE] {
@@ -251,4 +203,67 @@ fn ctr_encrypt(plain_text: Vec<u8>, key: [u8; BLOCK_SIZE]) -> Vec<u8> {
 
 fn ctr_decrypt(cipher_text: Vec<u8>, key: [u8; BLOCK_SIZE]) -> Vec<u8> {
 	todo!()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn un_group_test() {
+		let plaintext = "Hello, world!";
+		
+		let data = string_to_u8_16(plaintext);
+
+		let padded = pad(data.to_vec());
+
+		let group_data = group(padded);
+
+        assert_eq!(
+            vec![72, 101, 108, 108, 111, 44, 32, 119, 111, 114, 108, 100, 33, 0, 0, 0, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16],
+            un_group(group_data)
+        )
+    }
+
+	#[test]
+    fn un_pad_test() {
+		let plaintext = "Hello, world!";
+		
+		let data = string_to_u8_16(plaintext);
+
+		let padded = pad(data.to_vec());
+
+        assert_eq!(
+            vec![72, 101, 108, 108, 111, 44, 32, 119, 111, 114, 108, 100, 33, 0, 0, 0],
+            un_pad(padded)
+        )
+    }
+
+	#[test]
+    fn ecb_encrypt_test() {
+		let plaintext = "Hello, world!";
+		let key = "PBA";
+		let _key = string_to_u8_16(key);
+		let data = string_to_u8_16(plaintext);
+
+        assert_eq!(
+            vec![211, 31, 103, 243, 12, 56, 41, 155, 23, 60, 70, 227, 13, 165, 132, 46],
+            ecb_encrypt(data.to_vec(), _key)
+        )
+    }
+
+	#[test]
+    fn ecb_decrypt_test() {
+		let plaintext = "Hello, world!";
+		let key = "PBA";
+		let _key = string_to_u8_16(key);
+		let data = string_to_u8_16(plaintext);
+		let cipher_text =  ecb_encrypt(data.to_vec(), _key);
+
+        assert_eq!(
+            vec![72, 101, 108, 108, 111, 44, 32, 119, 111, 114, 108, 100, 33, 0, 0, 0],
+            ecb_decrypt(cipher_text.to_vec(), _key)
+        )
+    }
+
 }
