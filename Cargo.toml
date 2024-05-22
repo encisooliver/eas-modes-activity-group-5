@@ -1,7 +1,9 @@
 [package]
-name = "eas-modes-activity"
+name = "aes-modes-activity"
 version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-aes = "0.8.1"
+aes = "0.8.4"
+rand = "0.8.5"
+rayon = "1.10.0"

@@ -15,6 +15,7 @@ use aes::{
 	cipher::{generic_array::GenericArray, BlockCipher, BlockDecrypt, BlockEncrypt, KeyInit},
 	Aes128,
 };
+use rand::{distributions::Alphanumeric, Rng};
 
 ///We're using AES 128 which has 16-byte (128 bit) blocks.
 const BLOCK_SIZE: usize = 16;
@@ -181,8 +182,28 @@ fn cbc_decrypt(cipher_text: Vec<u8>, key: [u8; BLOCK_SIZE]) -> Vec<u8> {
 /// Once again, you will need to generate a random nonce which is 64 bits long. This should be
 /// inserted as the first block of the ciphertext.
 fn ctr_encrypt(plain_text: Vec<u8>, key: [u8; BLOCK_SIZE]) -> Vec<u8> {
-	// Remember to generate a random nonce
-	todo!()
+    let mut random_nounce: Vec<u8> = rand::thread_rng()
+        .sample_iter(Alphanumeric)
+        .take(64)
+        .collect();
+    let mut counter = 0usize;
+    let mut cipher = Vec::new();
+    plain_text.chunks(128).for_each(|chunk| {
+        let counter_array = counter.to_le_bytes()[..].to_vec();
+        counter += 1;
+
+        random_nounce.extend(counter_array);
+        let stub = pad(random_nounce.clone());
+
+        let sub_cipher = ecb_encrypt(stub, key);
+        let xor = sub_cipher
+            .iter()
+            .zip(chunk)
+            .map(|(x, y)| x ^ y)
+            .collect::<Vec<u8>>();
+        cipher.extend(xor);
+    });
+    cipher
 }
 
 fn ctr_decrypt(cipher_text: Vec<u8>, key: [u8; BLOCK_SIZE]) -> Vec<u8> {
