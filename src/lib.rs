@@ -169,7 +169,7 @@ fn cbc_encrypt(plain_text: Vec<u8>, key: [u8; BLOCK_SIZE]) -> Vec<u8> {
 	let padded_data = pad(plain_text.to_vec());
 	let data = vec_u8_to_u8_16(padded_data);
 	let aes_encrypted_data = aes_encrypt(data, &key);
-	aes_encrypted_data.to_ascii_uppercase()
+	aes_encrypted_data.to_vec()
 }
 
 fn cbc_decrypt(cipher_text: Vec<u8>, key: [u8; BLOCK_SIZE]) -> Vec<u8> {
@@ -266,4 +266,31 @@ mod tests {
         )
     }
 
+
+	#[test]
+    fn cbc_encrypt_test() {
+		let plaintext = "Hello, world!";
+		let key = "PBA";
+		let _key = string_to_u8_16(key);
+		let data = string_to_u8_16(plaintext);
+
+        assert_eq!(
+            vec![211, 31, 103, 243, 12, 56, 41, 155, 23, 60, 70, 227, 13, 165, 132, 46],
+            cbc_encrypt(data.to_vec(), _key)
+        )
+    }
+
+	#[test]
+    fn cbc_decrypt_test() {
+		let plaintext = "Hello, world!";
+		let key = "PBA";
+		let _key = string_to_u8_16(key);
+		let data = string_to_u8_16(plaintext);
+		let cipher_text = cbc_encrypt(data.to_vec(), _key);
+
+        assert_eq!(
+			vec![72, 101, 108, 108, 111, 44, 32, 119, 111, 114, 108, 100, 33, 0, 0, 0],
+            cbc_decrypt(cipher_text, _key)
+        )
+    }
 }

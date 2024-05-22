@@ -59,11 +59,16 @@ fn main() {
 	println!("aes_decrypt: {:?}", aes_decrypt_data);
 
 	let ecb_encrypt_data = ecb_encrypt(data.to_vec(), _key);
-
 	println!("ecb_encrypt_data: {:?}", ecb_encrypt_data);
 
-	let cipher_text = ecb_decrypt(ecb_encrypt_data.to_vec(), _key);
-	println!("ecb_decrypt_data: {:?}", ecb_decrypt_data);
+	let origina_data = ecb_decrypt(ecb_encrypt_data.to_vec(), _key);
+	println!("ecb_decrypt_data: {:?}", origina_data);
+
+	let cbc_decrypt_cipher_text = cbc_encrypt(data.to_vec(), _key);
+	println!("cbc_decrypt_cipher_text: {:?}", cbc_decrypt_cipher_text);
+
+	let ecb_encrypt_actual_data = cbc_decrypt(cbc_decrypt_cipher_text.to_vec(), _key);
+	println!("cbc_decrypt: {:?}", ecb_encrypt_actual_data);
 
 }
 
@@ -166,10 +171,14 @@ fn un_group(blocks: Vec<[u8; BLOCK_SIZE]>) -> Vec<u8> {
 
 /// Does the opposite of the pad function.
 fn un_pad(data: Vec<u8>) -> Vec<u8> {
-	let mut _data:Vec<u8> = Vec::new();
-
+	let mut _data:Vec<u8> = data.clone();
+	println!("un_pad: {:?}", data.clone());
+	println!("un_pad: {:?} == {:?}", data.len(), BLOCK_SIZE);
+	println!("check: {:?}", data.len() > BLOCK_SIZE);
 	if data.len() > BLOCK_SIZE {
 		let mut i = 0;
+
+		println!("checking");
 
 		while _data.len() < BLOCK_SIZE  {
 			_data.push(data[i]);
@@ -215,15 +224,21 @@ fn ecb_decrypt(cipher_text: Vec<u8>, key: [u8; BLOCK_SIZE]) -> Vec<u8> {
 fn cbc_encrypt(plain_text: Vec<u8>, key: [u8; BLOCK_SIZE]) -> Vec<u8> {
 	// Remember to generate a random initialization vector for the first block.
 	let padded_data = pad(plain_text.to_vec());
+	println!("0: {:?}", padded_data);
 	let data = vec_u8_to_u8_16(padded_data);
 	let aes_encrypted_data = aes_encrypt(data, &key);
-	aes_encrypted_data.to_ascii_uppercase()
+	aes_encrypted_data.to_vec()
 }
 
 fn cbc_decrypt(cipher_text: Vec<u8>, key: [u8; BLOCK_SIZE]) -> Vec<u8> {
 
 	let data = vec_u8_to_u8_16(cipher_text);
+	println!("1: {:?}", data);
+
 	let aes_decrypt_data = aes_decrypt(data, &key);
+
+	println!("2: {:?}", aes_decrypt_data);
+
 	let un_pad_data = un_pad(aes_decrypt_data.to_vec());
 	un_pad_data
 }
