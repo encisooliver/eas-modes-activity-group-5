@@ -207,5 +207,26 @@ fn ctr_encrypt(plain_text: Vec<u8>, key: [u8; BLOCK_SIZE]) -> Vec<u8> {
 }
 
 fn ctr_decrypt(cipher_text: Vec<u8>, key: [u8; BLOCK_SIZE]) -> Vec<u8> {
-	todo!()
+    let mut random_nounce: Vec<u8> = rand::thread_rng()
+        .sample_iter(Alphanumeric)
+        .take(64)
+        .collect();
+    let mut counter = 0usize;
+    let mut cipher = Vec::new();
+    cipher_text.chunks(128).for_each(|chunk| {
+        let counter_array = counter.to_le_bytes()[..].to_vec();
+        counter += 1;
+
+        random_nounce.extend(counter_array);
+        let stub = pad(random_nounce.clone());
+
+        let sub_cipher = ecb_encrypt(stub, key);
+        let xor = sub_cipher
+            .iter()
+            .zip(chunk)
+            .map(|(x, y)| x ^ y)
+            .collect::<Vec<u8>>();
+        cipher.extend(xor);
+    });
+    cipher
 }
