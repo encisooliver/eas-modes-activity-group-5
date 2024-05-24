@@ -27,48 +27,47 @@ fn main() {
 	// print!("{}",aes_encrypted_block);
 	let plaintext = "Hello, world!";
 	let key = "PBA";
-	let _key = string_to_u8_16(key);
-	let data = string_to_u8_16(plaintext);
 
-	println!("_key: {:?}", _key);
-	println!("data: {:?}", data);
+    
+    // Convert the string to Vec<u8>
+    let byte_vec: Vec<u8> = plaintext.as_bytes().to_vec();
 
-	let padded = pad(data.to_vec());
-
-	println!("padded: {:?}", padded);
-
-	let padded = pad(data.to_vec());
+	let padded = pad(byte_vec.to_vec());
 
 	println!("padded: {:?}", padded);
 
-	let group_data = group(padded);
+	// let padded = pad(data.to_vec());
 
-	println!("group_data: {:?}", group_data);
+	// println!("padded: {:?}", padded);
 
-	let un_group_data = un_group(group_data);
+	// let group_data = group(padded);
 
-	println!("un_group_data: {:?}", un_group_data);
+	// println!("group_data: {:?}", group_data);
 
-	let un_pad_data = un_pad(un_group_data.to_vec());
+	// let un_group_data = un_group(group_data);
 
-	println!("un_pad_data: {:?}", un_pad_data);
+	// println!("un_group_data: {:?}", un_group_data);
 
-	let aes_encrypted_data = aes_encrypt(data, &_key);
-	println!("aes_encrypted_data: {:?}", aes_encrypted_data);
-	let aes_decrypt_data = aes_decrypt(aes_encrypted_data, &_key);
-	println!("aes_decrypt: {:?}", aes_decrypt_data);
+	// let un_pad_data = un_pad(un_group_data.to_vec());
 
-	let ecb_encrypt_data = ecb_encrypt(data.to_vec(), _key);
-	println!("ecb_encrypt_data: {:?}", ecb_encrypt_data);
+	// println!("un_pad_data: {:?}", un_pad_data);
 
-	let origina_data = ecb_decrypt(ecb_encrypt_data.to_vec(), _key);
-	println!("ecb_decrypt_data: {:?}", origina_data);
+	// let aes_encrypted_data = aes_encrypt(data, &_key);
+	// println!("aes_encrypted_data: {:?}", aes_encrypted_data);
+	// let aes_decrypt_data = aes_decrypt(aes_encrypted_data, &_key);
+	// println!("aes_decrypt: {:?}", aes_decrypt_data);
 
-	let cbc_decrypt_cipher_text = cbc_encrypt(data.to_vec(), _key);
-	println!("cbc_decrypt_cipher_text: {:?}", cbc_decrypt_cipher_text);
+	// let ecb_encrypt_data = ecb_encrypt(data.to_vec(), _key);
+	// println!("ecb_encrypt_data: {:?}", ecb_encrypt_data);
 
-	let ecb_encrypt_actual_data = cbc_decrypt(cbc_decrypt_cipher_text.to_vec(), _key);
-	println!("cbc_decrypt: {:?}", ecb_encrypt_actual_data);
+	// let origina_data = ecb_decrypt(ecb_encrypt_data.to_vec(), _key);
+	// println!("ecb_decrypt_data: {:?}", origina_data);
+
+	// let cbc_decrypt_cipher_text = cbc_encrypt(data.to_vec(), _key);
+	// println!("cbc_decrypt_cipher_text: {:?}", cbc_decrypt_cipher_text);
+
+	// let ecb_encrypt_actual_data = cbc_decrypt(cbc_decrypt_cipher_text.to_vec(), _key);
+	// println!("cbc_decrypt: {:?}", ecb_encrypt_actual_data);
 
 }
 
@@ -86,21 +85,6 @@ fn aes_encrypt(data: [u8; BLOCK_SIZE], key: &[u8; BLOCK_SIZE]) -> [u8; BLOCK_SIZ
 	block.into()
 }
 
-fn string_to_u8_16(s: &str) -> [u8; BLOCK_SIZE] {
-    let mut array = [0u8; BLOCK_SIZE];
-    let bytes = s.as_bytes();
-    let len = bytes.len().min(BLOCK_SIZE);
-    array[..len].copy_from_slice(&bytes[..len]);
-    array
-}
-
-fn vec_u8_to_u8_16(data: Vec<u8>)-> [u8; BLOCK_SIZE] {
-	let mut array = [0u8; BLOCK_SIZE];
-    let len = data.len().min(BLOCK_SIZE);
-   	array[..len].copy_from_slice(&data[..len]);
-
-	array
-}
 
 /// Simple AES encryption
 /// Helper function to make the core AES block cipher easier to understand.
@@ -132,7 +116,7 @@ fn aes_decrypt(data: [u8; BLOCK_SIZE], key: &[u8; BLOCK_SIZE]) -> [u8; BLOCK_SIZ
 /// another entire block containing the block length in each byte. In our case,
 /// [16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16]
 fn pad(mut data: Vec<u8>) -> Vec<u8> {
-	// When twe have a multiple the second term is 0
+	// When we have a multiple the second term is 0
 	let number_pad_bytes = BLOCK_SIZE - data.len() % BLOCK_SIZE;
 
 	for _ in 0..number_pad_bytes {
@@ -171,22 +155,17 @@ fn un_group(blocks: Vec<[u8; BLOCK_SIZE]>) -> Vec<u8> {
 
 /// Does the opposite of the pad function.
 fn un_pad(data: Vec<u8>) -> Vec<u8> {
-	let mut _data:Vec<u8> = data.clone();
-	println!("un_pad: {:?}", data.clone());
-	println!("un_pad: {:?} == {:?}", data.len(), BLOCK_SIZE);
-	println!("check: {:?}", data.len() > BLOCK_SIZE);
-	if data.len() > BLOCK_SIZE {
-		let mut i = 0;
+	let mut block: Vec<u8> = Vec::new();
+	let mut i = 0;
+	for _ in 0..BLOCK_SIZE {
 
-		println!("checking");
-
-		while _data.len() < BLOCK_SIZE  {
-			_data.push(data[i]);
-			i += 1;
+		if data[i] >= 0 && data[i]  <= 16 {
+			block.push(data[i])
 		}
+		i += 1;
 	}
 
-	_data
+	data
 }
 
 /// The first mode we will implement is the Electronic Code Book, or ECB mode.
@@ -197,16 +176,12 @@ fn un_pad(data: Vec<u8>) -> Vec<u8> {
 /// One good thing about this mode is that it is parallelizable. But to see why it is
 /// insecure look at: https://www.ubiqsecurity.com/wp-content/uploads/2022/02/ECB2.png
 fn ecb_encrypt(plain_text: Vec<u8>, key: [u8; 16]) -> Vec<u8> {
-	let data = vec_u8_to_u8_16(plain_text);
-	let e = aes_encrypt(data, &key);
-	e.to_vec()
+	todo!()
 }
 
 /// Opposite of ecb_encrypt.
 fn ecb_decrypt(cipher_text: Vec<u8>, key: [u8; BLOCK_SIZE]) -> Vec<u8> {
-	let data = vec_u8_to_u8_16(cipher_text);
-	let e = aes_decrypt(data, &key);
-	e.to_vec()
+	todo!()
 }
 
 /// The next mode, which you can implement on your own is cipherblock chaining.
@@ -223,24 +198,16 @@ fn ecb_decrypt(cipher_text: Vec<u8>, key: [u8; BLOCK_SIZE]) -> Vec<u8> {
 /// is inserted as the first block of ciphertext.
 fn cbc_encrypt(plain_text: Vec<u8>, key: [u8; BLOCK_SIZE]) -> Vec<u8> {
 	// Remember to generate a random initialization vector for the first block.
-	let padded_data = pad(plain_text.to_vec());
-	println!("0: {:?}", padded_data);
-	let data = vec_u8_to_u8_16(padded_data);
-	let aes_encrypted_data = aes_encrypt(data, &key);
-	aes_encrypted_data.to_vec()
+	// let padded_data = pad(plain_text.to_vec());
+	// let data = vec_u8_to_u8_16(padded_data);
+	// let aes_encrypted_data = aes_encrypt(data, &key);
+	// aes_encrypted_data.to_vec()
+
+	todo!()
 }
 
 fn cbc_decrypt(cipher_text: Vec<u8>, key: [u8; BLOCK_SIZE]) -> Vec<u8> {
-
-	let data = vec_u8_to_u8_16(cipher_text);
-	println!("1: {:?}", data);
-
-	let aes_decrypt_data = aes_decrypt(data, &key);
-
-	println!("2: {:?}", aes_decrypt_data);
-
-	let un_pad_data = un_pad(aes_decrypt_data.to_vec());
-	un_pad_data
+	todo!()
 }
 
 /// Another mode which you can implement on your own is counter mode.

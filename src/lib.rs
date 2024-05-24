@@ -127,6 +127,8 @@ fn un_pad(data: Vec<u8>) -> Vec<u8> {
 			_data.push(data[i]);
 			i += 1;
 		}
+
+		return  _data;
 	}
 
 	_data
@@ -287,10 +289,15 @@ mod tests {
 		let _key = string_to_u8_16(key);
 		let data = string_to_u8_16(plaintext);
 		let cipher_text = cbc_encrypt(data.to_vec(), _key);
+		
+		println!("cipher_text: {:?}", cipher_text);
+		println!("cipher_text: {:?}", cipher_text);
+
+		let original_data = cbc_decrypt(cipher_text, _key).to_vec();
 
         assert_eq!(
 			vec![72, 101, 108, 108, 111, 44, 32, 119, 111, 114, 108, 100, 33, 0, 0, 0],
-            cbc_decrypt(cipher_text, _key)
+            original_data
         )
     }
 }
