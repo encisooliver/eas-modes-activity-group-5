@@ -16,6 +16,7 @@ use aes::{
 	Aes128,
 };
 use rand::{distributions::Alphanumeric, Rng};
+
 ///We're using AES 128 which has 16-byte (128 bit) blocks.
 const BLOCK_SIZE: usize = 16;
 
@@ -107,7 +108,7 @@ fn group(data: Vec<u8>) -> Vec<[u8; BLOCK_SIZE]> {
 
 /// Does the opposite of the group function
 fn un_group(blocks: Vec<[u8; BLOCK_SIZE]>) -> Vec<u8> {
-	let mut _block : Vec<u8> = Vec::new();
+    let mut _block : Vec<u8> = Vec::new();
 	for block in blocks.iter() {
 		for val in block.iter() {
 			_block.push(val.clone())
@@ -118,20 +119,18 @@ fn un_group(blocks: Vec<[u8; BLOCK_SIZE]>) -> Vec<u8> {
 
 /// Does the opposite of the pad function.
 fn un_pad(data: Vec<u8>) -> Vec<u8> {
-	let mut _data:Vec<u8> = Vec::new();
+    let mut block: Vec<u8> = Vec::new();
+	let mut i = 0;
+	for _ in 0..BLOCK_SIZE {
 
-	if data.len() > BLOCK_SIZE {
-		let mut i = 0;
-
-		while _data.len() < BLOCK_SIZE  {
-			_data.push(data[i]);
-			i += 1;
+		if data[i] >= 0 && data[i] <= 16 {
+			block.push(data[i])
 		}
+		i += 1;
 	}
 
-	_data
+	data
 }
-
 /// The first mode we will implement is the Electronic Code Book, or ECB mode.
 /// Warning: THIS MODE IS NOT SECURE!!!!
 ///
